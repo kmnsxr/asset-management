@@ -43,3 +43,5 @@ deploy.bat
 deploy.sh
 docker-compose.yml
 docker-compose.zip
+deploy.bat - ショートカット
+Dockerfile
