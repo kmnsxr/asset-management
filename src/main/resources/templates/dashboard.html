@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資産ダッシュボード＆一覧</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Swiper.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <!-- moment.js -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #83a4d4, #b6fbff);
+            margin: 0;
+            padding: 1rem;
+            width: 100%;
+            min-height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
+            margin-top: 2rem;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #333;
+            font-size: 1.5rem;
+        }
+        .swiper {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .swiper-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .swiper-button-next, .swiper-button-prev {
+            color: #333;
+        }
+        .swiper-button-next::after, .swiper-button-prev::after {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0 0 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 0.8rem;
+            text-align: left;
+        }
+        th {
+            background-color: #4a90e2;
+            color: white;
+        }
+        .action-btn, .top-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 10px 20px;
+            background-color: #4a90e2;
+            color: white;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .action-btn:hover, .top-link:hover {
+            background-color: #357ab7;
+        }
+
+        .asset-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            margin: 2px 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .asset-edit-btn {
+            background-color: #3498db;
+            color: #fff;
+        }
+        .asset-edit-btn:hover {
+            background-color: #2980b9;
+        }
+        .asset-delete-btn {
+            background-color: #e74c3c;
+            color: #fff;
+        }
+        .asset-delete-btn:hover {
+            background-color: #c0392b;
+        }
+        .asset-action-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        @media (max-width: 600px) {
+            .swiper {
+                height: 250px;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead tr {
+                display: none;
+            }
+            tr {
+                background: #f9f9f9;
+                margin-bottom: 1rem;
+                padding: 1rem;
+                border-radius: 10px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+            td {
+                display: flex;
+                border: none;
+                border-bottom: 1px solid #ddd;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-weight: bold;
+                white-space: nowrap;
+            }
+            td[data-label="操作"] {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                position: relative;
+                padding-left: 0;
+                padding-right: 10px;
+            }
+            td[data-label="操作"]::before {
+                content: "操作";
+                position: absolute;
+                left: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-weight: bold;
+                white-space: nowrap;
+            }
+            td[data-label="操作"] .asset-action-group {
+                display: flex;
+                flex-direction: row;
+                gap: 8px;
+                margin-left: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="top-section">
+        <h2>資産ダッシボード</h2>
+    </div>
+    <div class="swiper">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide"><canvas id="assetLineChart"></canvas></div>
+            <div class="swiper-slide"><canvas id="assetPieChart"></canvas></div>
+        </div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+    </div>
+    <h2>資産一覧</h2>
+    <table>
+        <tbody>
+        <tr th:each="asset : ${assets}">
+            <td data-label="資産名" th:text="${asset.assetName}">資産名</td>
+            <td data-label="資産種別" th:text="${asset.assetType}">資産種別</td>
+            <td data-label="金額" th:text="${#numbers.formatDecimal(asset.balance, 0, 0)}">金額</td>
+            <td data-label="取得日" th:text="${asset.updatedAtFormatted}">取得日</td>
+            <td data-label="操作">
+                <div class="asset-action-group">
+                    <a th:href="@{'/assets/edit/' + ${asset.assetId}}" class="asset-action-btn asset-edit-btn">編集</a>
+                    <a th:href="@{'/assets/delete/' + ${asset.assetId}}" class="asset-action-btn asset-delete-btn" onclick="return confirm('本当に削除しますか？');">削除</a>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div style="text-align:center;">
+        <a th:href="@{/assets/register}" class="action-btn">資産追加</a>
+    </div>
+</div>
+
+<script>
+    const swiper = new Swiper('.swiper', {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        loop: true,
+    });
+
+    fetch('/api/asset-data')
+      .then(response => response.json())
+      .then(data => {
+        const ctx1 = document.getElementById('assetLineChart').getContext('2d');
+        const gradient = ctx1.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(0, 191, 255, 0.6)');
+        gradient.addColorStop(1, 'rgba(173, 216, 230, 0.4)');
+
+        new Chart(ctx1, {
+          type: 'line',
+          data: {
+            labels: data.dates.map(date => moment(date).format('YYYY-MM-DD')),
+            datasets: [{
+              label: '資産金額',
+              data: data.balances,
+              borderColor: '#1E90FF',
+              backgroundColor: gradient,
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      });
+
+    fetch('/api/asset-type-data')
+      .then(response => response.json())
+      .then(data => {
+        const ctx2 = document.getElementById('assetPieChart').getContext('2d');
+        const labels = Object.keys(data.assetTypeBalances);
+        const balances = Object.values(data.assetTypeBalances);
+
+        new Chart(ctx2, {
+          type: 'pie',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: balances,
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#FF5733']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              datalabels: {
+                formatter: (value, context) => {
+                  const data = context.chart.data.datasets[0].data;
+                  const total = data.reduce((sum, val) => sum + val, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${percentage}%`;
+                },
+                color: '#fff',
+                font: {
+                  weight: 'bold',
+                  size: 14
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.raw || 0;
+                    return `${label}: ${value.toLocaleString()} 円`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      });
+</script>
+
+</body>
+</html>

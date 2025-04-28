@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>資産編集</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #83a4d4, #b6fbff); /* グラデ背景に */
+      margin: 0;
+      padding: 1rem;
+      width: 100%;
+      min-height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* ログイン・ダッシュボードと同じ影 */
+      box-sizing: border-box;
+      margin-top: 2rem;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #555;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.8rem;
+      background-color: #4a90e2; /* ボタンもログインに合わせる */
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    button:hover {
+      background-color: #357ab7;
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .back-link a {
+      color: #4a90e2;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 1rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+      }
+
+      input, select, textarea, button {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+
+</head>
+<body>
+<div class="container">
+  <h2>資産編集フォーム</h2>
+
+  <form th:action="@{'/assets/edit/' + ${asset.assetId}}" method="post">
+    <label>資産種別:</label>
+    <select name="assetType" required>
+      <option value="現金" th:selected="${asset.assetType == '現金'}">現金</option>
+      <option value="株式" th:selected="${asset.assetType == '株式'}">株式</option>
+      <option value="不動産" th:selected="${asset.assetType == '不動産'}">不動産</option>
+      <option value="その他" th:selected="${asset.assetType == 'その他'}">その他</option>
+    </select>
+
+    <label>資産名:</label>
+    <input type="text" name="assetName" th:value="${asset.assetName}" required>
+
+    <label>金額:</label>
+    <input type="number" name="balance" step="0.01" th:value="${asset.balance}" required>
+
+    <label>メモ:</label>
+    <textarea name="note" rows="3" th:text="${asset.note}"></textarea>
+
+    <button type="submit">更新する</button>
+  </form>
+
+  <div class="back-link">
+    <a th:href="@{/dashboard}">← 一覧に戻る</a>
+  </div>
+</div>
+</body>
+</html>
