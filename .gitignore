@@ -38,3 +38,8 @@ src/main/java/com/tanaka/asset/asset_manager/entity/AssetHistory.java
 src/main/java/com/tanaka/asset/asset_manager/repository/AssetHistoryRepository.java
 src/main/java/com/tanaka/asset/asset_manager/util/EncodePassword.java
 src/main/java/com/tanaka/asset/asset_manager/util/NumberFormatUtils.java
+asset-manager-0.0.1-SNAPSHOT.jar
+deploy.bat
+deploy.sh
+docker-compose.yml
+docker-compose.zip
